@@ -1,0 +1,6 @@
+{
+  "name": "Oskayi Instant Capital",
+  "description": "Decentralized arbitrage funding platform leveraging flash loans, universal liquidity routing, gas sponsorship, and real EVM RPC verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
