@@ -19,6 +19,7 @@ import { Header } from './components/Header';
 import { VisionCard } from './components/VisionCard';
 import { VisionSubmissionModal } from './components/VisionSubmissionModal';
 import { VisionDetailsModal } from './components/VisionDetailsModal';
+import { WalletModal } from './components/WalletModal';
 import { FlashLoanAggregatorView } from './components/FlashLoanAggregatorView';
 import { UniversalRouterView } from './components/UniversalRouterView';
 import { GasRelayerView } from './components/GasRelayerView';
@@ -34,6 +35,7 @@ export default function App() {
   const [selectedVision, setSelectedVision] = useState<Vision | null>(null);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,6 +51,84 @@ export default function App() {
   });
 
   const [loadingVisions, setLoadingVisions] = useState(false);
+
+  // Restore saved wallet state & setup EIP-1193 listeners
+  useEffect(() => {
+    const savedWallet = localStorage.getItem('oskayi_connected_wallet');
+    if (savedWallet) {
+      try {
+        const parsed = JSON.parse(savedWallet);
+        if (parsed.connected && parsed.account) {
+          setWallet(parsed);
+        }
+      } catch (e) {
+        console.error('Failed restoring wallet state:', e);
+      }
+    }
+
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      const ethereum = (window as any).ethereum;
+
+      // Check if already authorized
+      ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+        if (accounts && accounts[0]) {
+          ethereum.request({ method: 'eth_chainId' }).then((chainIdHex: string) => {
+            const chainId = parseInt(chainIdHex, 16);
+            const newState: Web3WalletState = {
+              connected: true,
+              account: accounts[0],
+              chainId,
+              balanceEth: '1.2500',
+              isMetaMask: Boolean(ethereum.isMetaMask)
+            };
+            setWallet(newState);
+            localStorage.setItem('oskayi_connected_wallet', JSON.stringify(newState));
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+
+      const handleAccountsChanged = (accs: string[]) => {
+        if (!accs || accs.length === 0) {
+          const disconnected: Web3WalletState = {
+            connected: false,
+            account: null,
+            chainId: null,
+            balanceEth: null,
+            isMetaMask: false
+          };
+          setWallet(disconnected);
+          localStorage.removeItem('oskayi_connected_wallet');
+        } else {
+          setWallet(prev => {
+            const updated = { ...prev, connected: true, account: accs[0] };
+            localStorage.setItem('oskayi_connected_wallet', JSON.stringify(updated));
+            return updated;
+          });
+        }
+      };
+
+      const handleChainChanged = (chainIdHex: string) => {
+        const newChainId = parseInt(chainIdHex, 16);
+        setWallet(prev => {
+          const updated = { ...prev, chainId: newChainId };
+          localStorage.setItem('oskayi_connected_wallet', JSON.stringify(updated));
+          return updated;
+        });
+      };
+
+      if (ethereum.on) {
+        ethereum.on('accountsChanged', handleAccountsChanged);
+        ethereum.on('chainChanged', handleChainChanged);
+      }
+
+      return () => {
+        if (ethereum.removeListener) {
+          ethereum.removeListener('accountsChanged', handleAccountsChanged);
+          ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+      };
+    }
+  }, []);
 
   // Fetch Visions & RPC Network Status
   const loadInitialData = async () => {
@@ -79,13 +159,8 @@ export default function App() {
     return () => clearInterval(interval);
   }, [selectedChainId]);
 
-  const handleConnectWallet = async () => {
-    try {
-      const state = await connectWeb3Wallet();
-      setWallet(state);
-    } catch (err: any) {
-      alert(err?.message || 'Failed connecting wallet');
-    }
+  const handleConnectWallet = () => {
+    setIsWalletModalOpen(true);
   };
 
   const handleVisionCreated = (newVision: Vision) => {
@@ -261,6 +336,14 @@ export default function App() {
       </main>
 
       {/* Modals */}
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        wallet={wallet}
+        setWallet={setWallet}
+        selectedChainId={selectedChainId}
+      />
+
       <VisionSubmissionModal
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
