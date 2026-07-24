@@ -43,6 +43,11 @@ export const VisionSubmissionModal: React.FC<VisionSubmissionModalProps> = ({
       return;
     }
 
+    if (targetAmount < 1 || targetAmount > 100000000) {
+      setError('Target funding amount must be between $1 and $100,000,000 (100 Million USDC/Tokens)');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -168,12 +173,16 @@ export const VisionSubmissionModal: React.FC<VisionSubmissionModalProps> = ({
               </label>
               <input
                 type="number"
-                min={100}
-                step={500}
+                min={1}
+                max={100000000}
+                step={1}
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(Number(e.target.value))}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500"
               />
+              <p className="text-[10px] text-slate-400 font-mono mt-1">
+                Supported Range: <span className="text-emerald-400 font-bold">$1</span> to <span className="text-emerald-400 font-bold">$100,000,000</span> {assetSymbol} ($100 Million Max)
+              </p>
             </div>
 
             <div>
@@ -182,13 +191,16 @@ export const VisionSubmissionModal: React.FC<VisionSubmissionModalProps> = ({
               </label>
               <input
                 type="number"
-                min={1}
+                min={0.1}
                 max={50}
-                step={0.5}
+                step={0.1}
                 value={discountPercent}
                 onChange={(e) => setDiscountPercent(Number(e.target.value))}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500"
               />
+              <p className="text-[10px] text-slate-400 font-mono mt-1">
+                Discount Range: 0.1% to 50.0%
+              </p>
             </div>
           </div>
 

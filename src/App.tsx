@@ -26,6 +26,7 @@ import { GasRelayerView } from './components/GasRelayerView';
 import { SmartContractCodeView } from './components/SmartContractCodeView';
 import { ExecutionHistoryView } from './components/ExecutionHistoryView';
 import { BotControlCenterView } from './components/BotControlCenterView';
+import { AutopilotEngineView } from './components/AutopilotEngineView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('visions');
@@ -310,6 +311,15 @@ export default function App() {
         )}
 
         {/* Other Tabs */}
+        {activeTab === 'autopilot' && (
+          <AutopilotEngineView
+            wallet={wallet}
+            networkStatus={networkStatus}
+            selectedChainId={selectedChainId}
+            onOpenWalletModal={() => setIsWalletModalOpen(true)}
+          />
+        )}
+
         {activeTab === 'flashloans' && (
           <FlashLoanAggregatorView selectedChainId={selectedChainId} />
         )}

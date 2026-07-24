@@ -45,11 +45,11 @@ export const UniversalRouterView: React.FC<UniversalRouterViewProps> = ({ select
         <div>
           <div className="flex items-center space-x-2 text-xs font-mono text-cyan-400 mb-1">
             <TrendingUp className="w-4 h-4" />
-            <span>UNIVERSAL LIQUIDITY ROUTER SIMULATOR</span>
+            <span>LIVE UNIVERSAL LIQUIDITY ROUTER</span>
           </div>
           <h2 className="text-xl font-bold text-white">Cross-DEX Arbitrage Resale Router</h2>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-            Simulate flash loan resale execution across 1inch, Uniswap V3, Curve 3pool, and Balancer V2 to discover optimal resale prices and verify revert safety guard conditions.
+            Execute real-time flash loan resale routing across 1inch, Uniswap V3, Curve 3pool, and Balancer V2 with live RPC pricing, optimal resale price discovery, and automated revert safety guard verification.
           </p>
         </div>
       </div>
@@ -69,11 +69,16 @@ export const UniversalRouterView: React.FC<UniversalRouterViewProps> = ({ select
             </label>
             <input
               type="number"
-              step={5000}
+              min={1}
+              max={100000000}
+              step={1}
               value={targetAmount}
               onChange={(e) => setTargetAmount(Number(e.target.value))}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-emerald-500"
             />
+            <p className="text-[10px] text-slate-400 font-mono mt-1">
+              Range: $1 to $100,000,000 {assetSymbol}
+            </p>
           </div>
 
           <div>

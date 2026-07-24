@@ -55,8 +55,13 @@ async function startServer() {
       minProfitMarginPercent
     } = req.body;
 
-    if (!title || !ownerAddress || !targetAmount || !discountPercent) {
+    if (!title || !ownerAddress || targetAmount === undefined || !discountPercent) {
       return res.status(400).json({ error: 'Missing required vision parameters' });
+    }
+
+    const numTarget = Number(targetAmount);
+    if (isNaN(numTarget) || numTarget < 1 || numTarget > 100000000) {
+      return res.status(400).json({ error: 'Target amount must be between $1 and $100,000,000 (100 Million USDC/Tokens)' });
     }
 
     const vision = db.addVision({
